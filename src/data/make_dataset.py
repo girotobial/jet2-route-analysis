@@ -9,7 +9,7 @@ def download_data():
         r'https://www.jet2.com'
         r'/api/search/airportinformation/allairportinformation'
     )
-    data = requests.get(url).json
+    data = requests.get(url).json()
     return data
 
 
