@@ -1,5 +1,7 @@
 import click
 import logging
+from zipfile import ZipFile
+from io import BytesIO
 import requests
 import json
 import pandas as pd
@@ -78,6 +80,25 @@ def scrape_iata_codes(jet2_data: str) -> pd.DataFrame:
         dataframes.append(scrape_iata_code_row(code))
         sleep(randint(2, 5))
     return pd.concat(dataframes)
+
+
+def download_global_airport_database() -> pd.DataFrame:
+    url = 'https://www.partow.net/downloads/GlobalAirportDatabase.zip'
+    r = requests.get(url, stream=True)
+    zip_ = ZipFile(BytesIO(r.content))
+
+    col_url = (
+        'https://www.partow.net/miscellaneous/airportdatabase'
+        '/index.html#Downloads'
+    )
+    columns = 
+
+    df = pd.read_table(
+        zip_.read('GlobalAirportDatabase.txt'),
+        sep=':',
+        usecols=columns
+    )
+    return df
 
 
 @click.command()
