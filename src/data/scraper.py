@@ -2,7 +2,7 @@ import abc
 import json
 from io import BytesIO
 from pathlib import Path
-from typing import List
+from typing import List, Dict
 from zipfile import ZipFile
 
 import pandas as pd
@@ -55,12 +55,12 @@ class AirportDatabase(ABCScraper):
     def _download_rows(self) -> str:
         r = requests.get(self._zip_url, stream=True)
         zip_ = ZipFile(BytesIO(r.content))
-        self.rows = zip_.read('GlobalAirportDatabase.txt')
-        return self.rows
+        self._rows = zip_.read('GlobalAirportDatabase.txt')
+        return self._rows
 
     def _scrape_column_headers(self) -> pd.DataFrame:
         response = requests.get(self._column_url)
-        soup = BeautifulSoup(response.text)
+        soup = BeautifulSoup(response.text, 'html.parser')
         table = soup.find_all(
             'table',
             {'class': 'tg'}
@@ -77,6 +77,19 @@ class AirportDatabase(ABCScraper):
         self._scrape_column_headers()
         return self
 
-    def save(self, file_path: Path, file_name: str):
-        pass
-        # TODO
+    def save(
+        self,
+        file_path: Path,
+        file_names: Dict[str, str] = dict(
+            rows='airport_database',
+            column_headers='airport_database_headers'
+        )
+    ):
+        with open(file_path / file_names['rows'], 'w') as row_file:
+            row_file.write(str(self._rows))
+
+        column_data = self._column_data
+        column_data.to_csv(
+            file_path / file_names['column_headers'],
+            index=False
+        )
