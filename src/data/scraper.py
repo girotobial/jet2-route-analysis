@@ -1,13 +1,13 @@
 import abc
-import json
 from io import BytesIO
+import json
 from pathlib import Path
-from typing import List, Dict
+from typing import Dict
 from zipfile import ZipFile
 
+from bs4 import BeautifulSoup
 import pandas as pd
 import requests
-from bs4 import BeautifulSoup
 
 
 class ABCScraper(abc.ABC):
