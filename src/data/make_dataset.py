@@ -8,7 +8,7 @@ import click
 import pandas as pd
 import requests
 
-import scraper
+import src.data.scraper as scraper
 
 
 def iata_location_table_parser(html_response: str) -> pd.DataFrame:
@@ -68,8 +68,9 @@ def scrape_iata_codes(jet2_data: str) -> pd.DataFrame:
 
 
 @click.command()
+@click.argument('input_filepath', type=click.Path())
 @click.argument('output_filepath', type=click.Path())
-def main(output_filepath: str):
+def main(input_filepath: str, output_filepath: str):
     """Downloads the data into the external folder
 
     Args:
@@ -80,16 +81,17 @@ def main(output_filepath: str):
     logging.basicConfig(level=logging.INFO, format=log_fmt)
     logger = logging.getLogger(__name__)
 
+    input_filepath = Path().cwd() / input_filepath
     output_filepath = Path().cwd() / output_filepath
 
     logger.info('Downloading Jet2 data from Jet2 API')
 
     jet2 = scraper.Jet2()
-    jet2.download().save(output_filepath)
+    jet2.download().save(input_filepath)
 
     logger.info('Scraping Global Aiport Database')
     airport_database = scraper.AirportDatabase()
-    airport_database.download().save(output_filepath)
+    airport_database.download().save(input_filepath)
 
 
 if __name__ == '__main__':
