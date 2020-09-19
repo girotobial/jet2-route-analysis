@@ -22,6 +22,10 @@ class ABCScraper(abc.ABC):
     def save(self):
         pass
 
+    @abc.abstractproperty
+    def dataframe(self):
+        pass
+
 
 class Jet2(ABCScraper):
     def __init__(self):
@@ -42,6 +46,10 @@ class Jet2(ABCScraper):
             json.dump(self.data, file)
         return self
 
+    @property
+    def dataframe(self) -> pd.DataFrame:
+        return pd.DataFrame(self.data['Data'])
+
 
 class AirportDatabase(ABCScraper):
     def __init__(self) -> None:
@@ -53,7 +61,9 @@ class AirportDatabase(ABCScraper):
             'https://www.partow.net/miscellaneous/airportdatabase'
             '/index.html#Downloads'
         )
-        self.data = None
+        self._rows = None
+        self._column_data = None
+        self._column_names = None
 
     def _download_rows(self) -> str:
         r = requests.get(self._zip_url, stream=True)
@@ -96,6 +106,15 @@ class AirportDatabase(ABCScraper):
             file_path / file_names['column_headers'],
             index=False
         )
+
+    @property
+    def dataframe(self) -> pd.DataFrame:
+        data = pd.read_table(
+            BytesIO(self._rows),
+            sep=':',
+        )
+        data.columns = self._column_names
+        return data
 
 
 def iata_location_table_parser(html_response: str) -> pd.DataFrame:
