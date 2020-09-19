@@ -85,8 +85,8 @@ class AirportDatabase(ABCScraper):
             column_headers='airport_database_headers'
         )
     ):
-        with open(file_path / file_names['rows'], 'w') as row_file:
-            row_file.write(str(self._rows))
+        with open(file_path / file_names['rows'], 'wb') as row_file:
+            row_file.write(self._rows)
 
         column_data = self._column_data
         column_data.to_csv(
