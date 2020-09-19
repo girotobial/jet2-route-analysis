@@ -74,7 +74,8 @@ def main(input_filepath: str, output_filepath: str):
     """Downloads the data into the external folder
 
     Args:
-        output_filepath (str): folder to save data to.
+        input_filepath (str): folder to save raw data to
+        output_filepath (str): folder to save processed data to.
     """
 
     log_fmt = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
