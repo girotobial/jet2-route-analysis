@@ -71,7 +71,8 @@ def scrape_iata_codes(jet2_data: str) -> pd.DataFrame:
 @click.argument('input_filepath', type=click.Path())
 @click.argument('output_filepath', type=click.Path())
 def main(input_filepath: str, output_filepath: str):
-    """Downloads the data into the external folder
+    """Downloads the raw data into the input filepath,
+    processes the data and saves it in the output filepath
 
     Args:
         input_filepath (str): folder to save raw data to
