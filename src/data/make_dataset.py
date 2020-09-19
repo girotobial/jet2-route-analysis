@@ -1,29 +1,14 @@
-import click
 import logging
-from zipfile import ZipFile
-from io import BytesIO
-import requests
-import json
-import pandas as pd
-from bs4 import BeautifulSoup
 from pathlib import Path
-
-from time import sleep
 from random import randint
+from time import sleep
 
+from bs4 import BeautifulSoup
+import click
+import pandas as pd
+import requests
 
-def download_jet2_data():
-    """Downloads the data from the jet2 api.
-
-    Returns:
-        (str): Jet2 data in a json format
-    """
-    url = (
-        r'https://www.jet2.com'
-        r'/api/search/airportinformation/allairportinformation'
-    )
-    data = requests.get(url).json()
-    return data
+import scraper
 
 
 def iata_location_table_parser(html_response: str) -> pd.DataFrame:
@@ -82,25 +67,6 @@ def scrape_iata_codes(jet2_data: str) -> pd.DataFrame:
     return pd.concat(dataframes)
 
 
-def download_global_airport_database() -> pd.DataFrame:
-    url = 'https://www.partow.net/downloads/GlobalAirportDatabase.zip'
-    r = requests.get(url, stream=True)
-    zip_ = ZipFile(BytesIO(r.content))
-
-    col_url = (
-        'https://www.partow.net/miscellaneous/airportdatabase'
-        '/index.html#Downloads'
-    )
-    columns = 
-
-    df = pd.read_table(
-        zip_.read('GlobalAirportDatabase.txt'),
-        sep=':',
-        usecols=columns
-    )
-    return df
-
-
 @click.command()
 @click.argument('output_filepath', type=click.Path())
 def main(output_filepath: str):
@@ -116,16 +82,15 @@ def main(output_filepath: str):
 
     output_filepath = Path().cwd() / output_filepath
 
-    logger.info('downloading jet2 data')
-    jet2_data = download_jet2_data()
+    logger.info('Downloading Jet2 data from Jet2 API')
 
-    with open(output_filepath / 'jet2_data.json', 'w') as file:
-        json.dump(jet2_data, file)
+    jet2 = scraper.Jet2()
+    jet2.download().save(output_filepath)
 
-    logger.info('scraping iata codes')
-    iata_codes = scrape_iata_codes(jet2_data)
-    iata_codes.to_csv(output_filepath / 'iata_codes.csv')
+    logger.info('Scraping Global Aiport Database')
+    airport_database = scraper.AirportDatabase()
+    airport_database.download().save(output_filepath)
 
 
 if __name__ == '__main__':
-    main(['data/external'])
+    main()
