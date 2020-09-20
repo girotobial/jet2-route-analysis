@@ -51,7 +51,9 @@ class Jet2(ABCScraper):
         try:
             df = pd.DataFrame(self.data['Data'])
         except ValueError:
-            pd.DataFrame(self.data)
+            df = pd.DataFrame(self.data)
+        except TypeError:
+            df = pd.DataFrame(self.data)
         return df
 
 
