@@ -28,11 +28,15 @@ def build_dataset(
     pd.DataFrame
         Dataset for analysis
     """
+
+    jet2_data = jet2_data.copy()
+    airport_database = airport_database.copy()
+
     # Remove routes not available for booking or without destinations
     jet2_data = jet2_data[
-        (jet2_data['isEnabledForBooking'] is True)
+        (jet2_data['isEnabledForBooking'])
         & (jet2_data['destinationIataCodes'] != '')
-    ]
+    ].copy()
 
     # The dataset is focused on lat/long in decimal and standardised location
     # names so the following columns are not needed.
@@ -68,10 +72,10 @@ def build_dataset(
         .apply(lambda x: x.split('|'))
     jet2_data = jet2_data.explode('destinationIataCodes')
 
-    # TODO Merge
-    
+    data = merge_tables(jet2_data, airport_database, 'Departure')
+    data = merge_tables(data, airport_database, 'Destination')
+
     # FIXME
-    data = None
     return data
 
 
@@ -109,8 +113,64 @@ def main(input_filepath: str, output_filepath: str):
         airport_database=airport_database.dataframe
     )
 
-    
 
+def merge_tables(
+    jet2_data: pd.DataFrame,
+    airport_data: pd.DataFrame,
+    on: str = 'Departure'
+) -> pd.DataFrame:
+    """Merges the jet2 with the airport datasets dependant on either
+
+    Parameters
+    ----------
+    jet2_data : pd.DataFrame
+        data downloaded from the Jet2 API as a pandas dataframe.
+    airport_data : pd.DataFrame
+        data downloaded from the global airport database as a
+        pandas dataframe.
+    on : str, optional
+        One of 'Departure' or 'Destination', by default 'Departure'.
+
+    Returns
+    -------
+    pd.DataFrame
+        Merged datasets with renamed columns as appropriate.
+
+    Raises
+    ------
+    ValueError
+        Raised if 'on' is not either 'Departure' or 'Destination'.
+    """
+    RENAME_COLUMNS = [
+        'label',
+        'code',
+        'City/Town',
+        'Country',
+        'Altitude',
+        'Latitude',
+        'Longitude',
+    ]
+
+    if on == 'Departure':
+        left_on = 'code'
+    elif on == 'Destination':
+        left_on = 'destinationIataCodes'
+    else:
+        raise ValueError(f'{on} is not a valid merge')
+
+    data = jet2_data.merge(
+        airport_data,
+        left_on=left_on,
+        right_on='IATA Code',
+        how='left',
+    )
+    data = data.rename(
+        columns={col: f'{on}_{col}' for col in RENAME_COLUMNS},
+    )
+    data = data.drop(
+        columns=['IATA Code'],
+    )
+    return data
 
 
 if __name__ == '__main__':
