@@ -20,36 +20,34 @@ def main():
     with st.spinner('Loading Data'):
         data = load_data()
 
-    departure_to_filter = st.sidebar.selectbox(
-        "Departure",
+    departure_to_filter = st.sidebar.multiselect(
+        "Departure Airport",
         [
-            'All',
             *data[
                 data['isDepartureAirport']
             ]['Departure Airport Name'].unique()
         ]
     )
-    if departure_to_filter == 'All':
+    if departure_to_filter == []:
         departure_mask = pd.Series([True]*len(data))
     else:
         departure_mask = (
-            data['Departure Airport Name'] == departure_to_filter
+            data['Departure Airport Name'].isin(departure_to_filter)
         )
 
-    destination_to_filter = st.sidebar.selectbox(
-        "Destination",
+    destination_to_filter = st.sidebar.multiselect(
+        "Destination Airport",
         [
-            'All',
             *data[
                 data['isDestinationAirport']
             ]['Departure Airport Name'].unique()
         ]
     )
-    if destination_to_filter == 'All':
+    if destination_to_filter == []:
         destination_mask = pd.Series([True]*len(data))
     else:
         destination_mask = (
-            data['Destination Airport Name'] == destination_to_filter
+            data['Destination Airport Name'].isin(destination_to_filter)
         )
 
     filtered_data = data[
