@@ -48,7 +48,11 @@ class Jet2(ABCScraper):
 
     @property
     def dataframe(self) -> pd.DataFrame:
-        return pd.DataFrame(self.data['Data'])
+        try:
+            df = pd.DataFrame(self.data['Data'])
+        except ValueError:
+            pd.DataFrame(self.data)
+        return df
 
 
 class AirportDatabase(ABCScraper):
