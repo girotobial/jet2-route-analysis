@@ -64,7 +64,7 @@ def plotly_route_map(
             go.Scattergeo(
                 text=(
                     f'{route_data["Departure Airport Name"][i]}'
-                    f'to {route_data["Destination Airport Name"][i]}'
+                    f' to {route_data["Destination Airport Name"][i]}'
                 ),
                 lon=[
                     route_data['Departure Longitude'][i],
@@ -76,7 +76,7 @@ def plotly_route_map(
                 ],
                 mode='lines',
                 line=dict(color='red'),
-                opacity=0.1,
+                opacity=0.6,
             )
         )
     fig.update_layout(
