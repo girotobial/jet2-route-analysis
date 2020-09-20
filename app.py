@@ -11,18 +11,23 @@ def load_data():
     jet2 = scraper.Jet2().download().dataframe
     air_db = scraper.AirportDatabase().download().dataframe
     data = dataset.build_dataset(jet2, air_db)
+    data = data.dropna().reset_index()
     return data
 
 
 def main():
     st.title('Jet2 Route Map')
-    data_load_state = st.text('Loading Data')
-    data = load_data()
-    data_load_state.text('')
+    with st.spinner('Loading Data'):
+        data = load_data()
 
     departure_to_filter = st.sidebar.selectbox(
         "Departure",
-        ['All', *data['Departure Airport Name'].unique()]
+        [
+            'All',
+            *data[
+                data['isDepartureAirport']
+            ]['Departure Airport Name'].unique()
+        ]
     )
     if departure_to_filter == 'All':
         departure_mask = pd.Series([True]*len(data))
@@ -33,7 +38,12 @@ def main():
 
     destination_to_filter = st.sidebar.selectbox(
         "Destination",
-        ['All', *data['Destination Airport Name'].unique()]
+        [
+            'All',
+            *data[
+                data['isDestinationAirport']
+            ]['Departure Airport Name'].unique()
+        ]
     )
     if destination_to_filter == 'All':
         destination_mask = pd.Series([True]*len(data))
@@ -45,7 +55,6 @@ def main():
     filtered_data = data[
         (departure_mask) & (destination_mask)
     ].reset_index()
-
     st.plotly_chart(viz.plotly_route_map(filtered_data, title=None))
 
 
