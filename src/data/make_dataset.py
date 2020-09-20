@@ -29,9 +29,6 @@ def build_dataset(
         Dataset for analysis
     """
 
-    jet2_data = jet2_data.copy()
-    airport_database = airport_database.copy()
-
     # Remove routes not available for booking or without destinations
     jet2_data = jet2_data[
         (jet2_data['isEnabledForBooking'])
@@ -40,7 +37,7 @@ def build_dataset(
 
     # The dataset is focused on lat/long in decimal and standardised location
     # names so the following columns are not needed.
-    jet2_data.drop(
+    jet2_data = jet2_data.drop(
         columns=[
             'searchTerms',
             'airportUrlKey',
@@ -48,25 +45,25 @@ def build_dataset(
             'country',
             'label'
         ],
-        inplace=True
     )
     airport_sub_titles = ['Degrees', 'Minutes', 'Seconds', 'Direction']
-    airport_database.drop(
+    airport_database = airport_database.drop(
         columns=[
             *[f'Latitude {sub}' for sub in airport_sub_titles],
             *[f'Longitude {sub}' for sub in airport_sub_titles],
             'ICAO Code',
-            'Airport Name',
         ],
-        inplace=True
     )
-    airport_database.rename(
+    airport_database = airport_database.rename(
         columns={
             'Latitude Decimal Degrees': 'Latitude',
             'Longitude Decimal Degrees': 'Longitude'
         },
-        inplace=True
     )
+    airport_database['Airport Name'] = airport_database['Airport Name']\
+        .str.title()
+    airport_database['City/Town'] = airport_database['City/Town'].str.title()
+    airport_database['Country'] = airport_database['Country'].str.title()
 
     jet2_data['destinationIataCodes'] = jet2_data['destinationIataCodes']\
         .apply(lambda x: x.split('|'))
@@ -75,7 +72,8 @@ def build_dataset(
     data = merge_tables(jet2_data, airport_database, 'Departure')
     data = merge_tables(data, airport_database, 'Destination')
 
-    # FIXME
+    data = data.rename(columns={'destinationIataCodes': 'Destination Code'})
+
     return data
 
 
@@ -108,9 +106,13 @@ def main(input_filepath: str, output_filepath: str):
     airport_database.download().save(input_filepath)
 
     logger.info('Building dataset')
-    build_dataset(
+    processed_data = build_dataset(
         jet2_data=jet2.dataframe,
         airport_database=airport_database.dataframe
+    )
+    processed_data.to_json(
+        output_filepath / 'route_data.json',
+        orient='records'
     )
 
 
@@ -144,6 +146,7 @@ def merge_tables(
     RENAME_COLUMNS = [
         'label',
         'code',
+        'Airport Name',
         'City/Town',
         'Country',
         'Altitude',
@@ -165,7 +168,7 @@ def merge_tables(
         how='left',
     )
     data = data.rename(
-        columns={col: f'{on}_{col}' for col in RENAME_COLUMNS},
+        columns={col: f'{on} {col.title()}' for col in RENAME_COLUMNS},
     )
     data = data.drop(
         columns=['IATA Code'],
