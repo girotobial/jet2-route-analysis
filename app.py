@@ -28,7 +28,10 @@ def filter_mask(
         return data[column].isin(values)
 
 
-def filter_data(data: pd.DataFrame, parameters: Dict[str, list]) -> pd.DataFrame:
+def filter_data(
+    data: pd.DataFrame,
+    parameters: Dict[str, list]
+) -> pd.DataFrame:
     """Selects rows based on passed parameters
 
     Parameters
@@ -92,7 +95,24 @@ def main():
     )
     filtered_data = filter_data(data, parameters)
 
-    st.plotly_chart(viz.plotly_route_map(filtered_data, title=None))
+    projection = st.radio(
+        label='Map Projection',
+        options=[
+            'orthographic',
+            'mercator',
+        ]
+    )
+    st.plotly_chart(
+        viz.plotly_route_map(
+            filtered_data,
+            title=None,
+            projection=projection,
+            height=800,
+            oceancolor='#3399FF',
+            landcolor='#f0dc82'
+        ),
+        use_container_width=True
+    )
 
 
 if __name__ == '__main__':

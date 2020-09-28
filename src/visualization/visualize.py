@@ -8,6 +8,8 @@ def plotly_route_map(
     projection: str = 'orthographic',
     height: float = None,
     width: float = None,
+    landcolor: str = None,
+    oceancolor: str = None,
 ) -> go.Figure:
     """Creates routemap using plotly
 
@@ -87,7 +89,11 @@ def plotly_route_map(
         geo=dict(
             projection_type=projection,
             showland=True,
+            showocean=True,
             fitbounds='locations',
+            landcolor=landcolor,
+            oceancolor=oceancolor,
+            lakecolor=oceancolor,
         ),
     )
     return fig
