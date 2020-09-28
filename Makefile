@@ -36,6 +36,10 @@ clean:
 lint:
 	flake8 src
 
+## Run streamlit app
+dashboard:
+	streamlit run app.py
+
 ## Set up python interpreter environment
 create_environment:
 ifeq (True,$(HAS_CONDA))
