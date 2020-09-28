@@ -6,8 +6,8 @@ def plotly_route_map(
     route_data: pd.DataFrame,
     title: str = 'Jet2 Routes',
     projection: str = 'orthographic',
-    height: float = 600,
-    width: float = 600,
+    height: float = None,
+    width: float = None,
 ) -> go.Figure:
     """Creates routemap using plotly
 
