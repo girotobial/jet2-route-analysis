@@ -15,6 +15,17 @@ def load_data():
     return data
 
 
+def filter_mask(
+    data: pd.DataFrame,
+    column: str,
+    values: list = [],
+):
+    if values == []:
+        return pd.Series([True]*len(data))
+    else:
+        return data[column].isin(values)
+
+
 def main():
     st.title('Jet2 Route Map')
     with st.spinner('Loading Data'):
@@ -22,33 +33,28 @@ def main():
 
     departure_to_filter = st.sidebar.multiselect(
         "Departure Airport",
-        [
-            *data[
-                data['isDepartureAirport']
-            ]['Departure Airport Name'].unique()
-        ]
+        data[
+            data['isDepartureAirport']
+        ]['Departure Airport Name'].unique().tolist()
     )
-    if departure_to_filter == []:
-        departure_mask = pd.Series([True]*len(data))
-    else:
-        departure_mask = (
-            data['Departure Airport Name'].isin(departure_to_filter)
-        )
+
+    departure_mask = filter_mask(
+        data=data,
+        column='Departure Airport Name',
+        values=departure_to_filter
+    )
 
     destination_to_filter = st.sidebar.multiselect(
         "Destination Airport",
-        [
-            *data[
-                data['isDestinationAirport']
-            ]['Departure Airport Name'].unique()
-        ]
+        data[
+            data['isDestinationAirport']
+        ]['Departure Airport Name'].unique().tolist()
     )
-    if destination_to_filter == []:
-        destination_mask = pd.Series([True]*len(data))
-    else:
-        destination_mask = (
-            data['Destination Airport Name'].isin(destination_to_filter)
-        )
+    destination_mask = filter_mask(
+        data=data,
+        column='Destination Airport Name',
+        values=destination_to_filter
+    )
 
     filtered_data = data[
         (departure_mask) & (destination_mask)
