@@ -37,7 +37,7 @@ lint:
 	flake8 src
 
 ## Run streamlit app
-dashboard:
+dashboard: requirements
 	streamlit run app.py
 
 ## Set up python interpreter environment
